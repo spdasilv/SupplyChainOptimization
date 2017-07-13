@@ -64,6 +64,7 @@ model.MC = Param(model.i, initialize=MC, doc='Running Costs')
 model.T = Param(model.k, initialize={'A': 0.0015, 'B': 0.0020}, doc='Transport Costs')
 model.TC = Param(model.k, initialize={'A': 50000, 'B': 30000}, doc='Truck Costs')
 model.P = Param(model.k, initialize={'A': 5.2, 'B': 6.0}, doc='Product Price')
+model.R = Param(model.k, initialize={'A': 35, 'B': 45}, doc="Hours of Work")
 
 ## Define variables ##
 model.X = Var(model.i, model.j, model.k, within=NonNegativeIntegers, doc="Product k flow from i to j")
@@ -76,7 +77,7 @@ model.Demand = Constraint(model.j, model.k, rule=Demand, doc='Supply Demand')
 
 
 def Capacity(model, i):
-    return sum(model.X[i, j, k]*(35/1000) for j in model.j for k in model.k) <= 25000*model.M[i]
+    return sum(model.X[i, j, k]*(model.R[k]/1000) for j in model.j for k in model.k) <= 25000*model.M[i]
 model.Capacity = Constraint(model.i, rule=Capacity, doc='Manufacturer Capacity')
 
 
