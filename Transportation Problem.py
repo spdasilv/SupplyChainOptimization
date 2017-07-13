@@ -98,6 +98,16 @@ def pyomo_postprocess(options=None, instance=None, results=None):
   model.M.display()
   model.X.display()
   model.NT.display()
+  with open('Manufacturer.txt', 'w') as f:
+      for key, value in instance.M._data.items():
+          f.write('%s,%s\n' % (key, value._value))
+  with open('Flow of Goods.txt', 'w') as f:
+      for key, value in instance.X._data.items():
+          f.write('%s,%s,%s,%s\n' % (key[0], key[1], key[2], value._value))
+  with open('Number Of Trucks.txt', 'w') as f:
+      for key, value in instance.NT._data.items():
+          f.write('%s,%s,%s\n' % (key[0], key[1], value._value))
+
 
 if __name__ == '__main__':
     # This emulates what the pyomo command-line tools does
