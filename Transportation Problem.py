@@ -69,6 +69,7 @@ model.R = Param(model.k, initialize={'A': 35, 'B': 45}, doc="Hours of Work")
 ## Define variables ##
 model.X = Var(model.i, model.j, model.k, within=NonNegativeIntegers, doc="Product k flow from i to j")
 model.M = Var(model.i, within=Binary, doc="Manufacturing plant i exists")
+model.NT = Var(model.i, model.j, within=NonNegativeIntegers, doc="Trucks Required")
 
 ## Define constraints ##
 def Demand(model, j, k):
@@ -81,15 +82,22 @@ def Capacity(model, i):
 model.Capacity = Constraint(model.i, rule=Capacity, doc='Manufacturer Capacity')
 
 
+def Trucks(model, i, j):
+    return model.NT[i, j] >= ((5/3)*model.X[i, j, 'A'] + model.X[i, j, 'B'])/30000
+model.Trucks = Constraint(model.i, model.j, rule=Trucks, doc='Trucks Required')
+
+
 ## Define Objective and solve ##
 def objectiveRule(model):
-    return sum(sum(model.X[i, j, k]*(model.P[k] - model.D[i, j]*model.T[k] - 25000/model.TC[k]) for j in model.j for k in model.k) - model.M[i]*model.MC[i] for i in model.i)
+
+    return sum(sum(model.X[i, j, 'A']*(model.P['A'] - model.D[i, j]*model.T['A']) + model.X[i, j, 'B']*(model.P['B'] - model.D[i, j]*model.T['B']) - model.NT[i, j]*25000 for j in model.j) - model.M[i]*model.MC[i] for i in model.i)
 model.objectiveRule = Objective(rule=objectiveRule, sense=maximize, doc='Define Objective Function')
 
 
 def pyomo_postprocess(options=None, instance=None, results=None):
   model.M.display()
   model.X.display()
+  model.NT.display()
 
 if __name__ == '__main__':
     # This emulates what the pyomo command-line tools does
